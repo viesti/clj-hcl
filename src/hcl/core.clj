@@ -1,5 +1,4 @@
 (ns hcl.core
-  (:use [clojure.core.match :refer [match]])
   (:require [clojure.string :as str]))
 
 (def default-indent "  ")
@@ -21,50 +20,42 @@
                 "\n"))
          ""))))
 
-(defn kv [f]
-  #(apply f %))
+(defn format-kv [k v]
+  (format "%s %s\n"
+          (cond
+            (vector? k)
+            (str (name (first k)) " " (str/join " " (map (partial format "\"%s\"") (rest k))))
+            :else
+            (name k))
+          (cond
+            (map? v)
+            (emit v)
+            :else
+            (format "= %s" (emit v)))))
 
 (defn emit [value]
-  (cond (nil? value)
-        ""
-        (map? value)
-        (format (case *level* 0 "%s" "{\n%s}")
-                (->> value
-                     (map (kv #(format "%s %s\n"
-                                       (cond (vector? %1)
-                                             (match %1
-                                               [::dup k _]
-                                               (cond (vector? k)
-                                                     (case (count k)
-                                                       1 (apply format "%s" (name k))
-                                                       2 (apply format "%s \"%s\"" (map name k)))
-                                                     :else       (name k))
+  (cond
+    (nil? value)
+    ""
 
-                                               :else
-                                               (case (count %1)
-                                                 1 (apply format "%s" (name %1))
-                                                 2 (apply format "%s \"%s\"" (map name %1))))
-                                             :else
-                                             (name %1))
-                                       (cond (map? %2)
-                                             (emit %2)
-                                             :else
-                                             (format "= %s" (emit %2))))))
-                     (str/join "")
-                     indented-lines))
+    (map? value)
+    (format (case *level*
+              0 "%s"
+              "{\n%s}")
+            (->> value
+                 (map (fn [[k v]]
+                        (if (and (keyword? k)
+                                 (= "repeated" (namespace k)))
+                          (str/join "" (map #(format-kv (name k) %) v))
+                          (format-kv k v))))
+                 (str/join "")
+                 indented-lines))
 
-        (vector? value)
-        (format "[\n%s]" (indented-lines (str/join ",\n" (map emit value))))
+    (vector? value)
+    (format "[\n%s]" (indented-lines (str/join ",\n" (map emit value))))
 
-        :else
-        (cond (string? value)
-              (quote-string value)
-              :else
-              (str value))))
-
-(def id (atom 0))
-(defn unique! []
-  (swap! id inc))
-
-(defn dupk [k]
-  [::dup k (unique!)])
+    :else
+    (cond (string? value)
+          (quote-string value)
+          :else
+          (str value))))
