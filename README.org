@@ -30,7 +30,7 @@ job "build" {
 }
 #+END_SRC
 
-Repeated blocks (like ingress below) are expressed via namespace `r` in the key:
+Repeated blocks (like ingress below) are expressed via namespace *r* in the key:
 
 #+BEGIN_SRC clojure
 (-> {[:resource "aws_security_group" "server"]
