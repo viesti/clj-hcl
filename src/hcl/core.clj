@@ -50,7 +50,7 @@
                  (map (fn [[k v]]
                         (if (repeating-key? k)
                           (str/join "" (map #(format-kv (name k) % emit) v))
-                          (format-kv k v))))
+                          (format-kv k v emit))))
                  (str/join "")
                  indented-lines))
 
