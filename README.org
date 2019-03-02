@@ -1,3 +1,5 @@
+Clojure EDN to HCL, forked from https://github.com/tristanstraub/clj-hcl
+
 #+BEGIN_SRC clojure
 (print (h/emit '{[:job "build"]
                  {:datacenters ["ap-southeast-2"]
@@ -24,6 +26,51 @@ job "build" {
       restart {
             attempts = 10
       }
+  }
+}
+#+END_SRC
+
+Repeated blocks (like ingress below) are expressed via namespace `r` in the key:
+
+#+BEGIN_SRC clojure
+(-> {[:resource "aws_security_group" "server"]
+     {:name "allow_traffic"
+      :description "Allow traffic to SSH and SSL ports"
+      :vpc_id "${aws_vpc.main.id}"
+      :r/ingress [{:from_port "22"
+                   :to_port "22"
+                   :protocol "tcp"
+                   :cidr_blocks ["0.0.0.0/0"]}
+                  {:from_port "443"
+                   :to_port "443"
+                   :protocol "tcp"
+                   :cidr_blocks ["0.0.0.0/0"]}]}}
+    sh/emit
+    println)
+#+END_SRC
+
+=>
+
+#+BEGIN_SRC terraform
+resource "aws_security_group" "server" {
+  name = "allow_traffic"
+  description = "Allow traffic to SSH and SSL ports"
+  vpc_id = "${aws_vpc.main.id}"
+  ingress {
+      from_port = "22"
+      to_port = "22"
+      protocol = "tcp"
+      cidr_blocks = [
+            "0.0.0.0/0"
+      ]
+  }
+  ingress {
+      from_port = "443"
+      to_port = "443"
+      protocol = "tcp"
+      cidr_blocks = [
+            "0.0.0.0/0"
+      ]
   }
 }
 #+END_SRC
