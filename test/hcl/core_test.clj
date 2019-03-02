@@ -7,14 +7,11 @@
               {:name "allow_traffic"
                :description "Allow traffic to SSH and SSL ports"
                :vpc_id "${aws_vpc.main.id}"
-               :r/ingress [{:from_port "22"
-                            :to_port "22"
-                            :protocol "tcp"
-                            :cidr_blocks ["0.0.0.0/0"]}
-                           {:from_port "443"
-                            :to_port "443"
-                            :protocol "tcp"
-                            :cidr_blocks ["0.0.0.0/0"]}]}}
+               :r/ingress (for [port [22 443]]
+                            {:from_port (str port)
+                             :to_port (str port)
+                             :protocol "tcp"
+                             :cidr_blocks ["0.0.0.0/0"]})}}
           sut/emit)
          "resource \"aws_security_group\" \"server\" {
   name = \"allow_traffic\"
