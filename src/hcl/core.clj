@@ -54,7 +54,7 @@
                  (str/join "")
                  indented-lines))
 
-    (vector? value)
+    (coll? value)
     (format "[\n%s]" (indented-lines (str/join ",\n" (map emit value))))
 
     :else
