@@ -20,7 +20,7 @@
                 "\n"))
          ""))))
 
-(defn format-kv [k v]
+(defn format-kv [k v emit]
   (format "%s %s\n"
           (cond
             (vector? k)
@@ -49,7 +49,7 @@
             (->> value
                  (map (fn [[k v]]
                         (if (repeating-key? k)
-                          (str/join "" (map #(format-kv (name k) %) v))
+                          (str/join "" (map #(format-kv (name k) % emit) v))
                           (format-kv k v))))
                  (str/join "")
                  indented-lines))
