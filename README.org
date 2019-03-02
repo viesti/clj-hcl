@@ -42,7 +42,8 @@ Repeated blocks (like ingress below) are expressed via namespace *r* in the key:
                     :to_port (str port)
                     :protocol "tcp"
                     :cidr_blocks ["0.0.0.0/0"]})}}
-    sut/emit)
+    h/emit
+    println)
 #+END_SRC
 
 =>
