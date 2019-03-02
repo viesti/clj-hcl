@@ -33,6 +33,10 @@
             :else
             (format "= %s" (emit v)))))
 
+(defn repeating-key? [k]
+  (and (keyword? k)
+       (= "r" (namespace k))))
+
 (defn emit [value]
   (cond
     (nil? value)
@@ -44,8 +48,7 @@
               "{\n%s}")
             (->> value
                  (map (fn [[k v]]
-                        (if (and (keyword? k)
-                                 (= "repeated" (namespace k)))
+                        (if (repeating-key? k)
                           (str/join "" (map #(format-kv (name k) %) v))
                           (format-kv k v))))
                  (str/join "")
